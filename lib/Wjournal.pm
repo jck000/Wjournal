@@ -189,7 +189,6 @@ post '/post/:post_id/:post_key?' => sub {
         { method => 'get'};
     }
     catch {
-        use DDP; p @_;
         return forward "/post/$post_id/$post_key#comment", {
             comment_msg => $_,
             comment_success => 0,
