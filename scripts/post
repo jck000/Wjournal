@@ -1,0 +1,182 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use v5.10.1;
+
+use Dancer2 ':script';
+use Wjournal;
+use Getopt::Long qw/:config no_ignore_case bundling/;
+use Carp;
+use File::Slurp;
+use Data::UUID;
+
+my %actions = (
+    search   => \&search_posts,
+    update   => \&update_post,
+    delete   => \&delete_post,
+    withdraw => \&withdraw_post,
+    publish  => \&publish_post,
+    delete   => \&delete_post,
+    output   => \&output_post,
+    new      => \&new_post,
+);
+
+my $schema = Wjournal::schema('default');
+my %opts;
+
+sub get_options {
+    $opts{'env'} = 'production';
+    $opts{'filetype'} = '';
+
+    GetOptions(
+        "e|env=s"              => \$opts{'env'},
+        "n|new-post"           => \$opts{'new'},
+        "u|update-post=i"      => \$opts{'update'},
+        "s|search-posts=s"     => \$opts{'search'},
+        "S|subject"            => \$opts{'subject'},
+        "p|publish-post=i"     => \$opts{'publish'},
+        "w|withdraw-post=i"    => \$opts{'withdraw'},
+        "o|output-post"        => \$opts{'output'},
+        "d|delete-post"        => \$opts{'delete'},
+        "D|really-delete-post" => \$opts{'reallydelete'},
+        "f|filetype"           => \$opts{'filetype'},
+        "N|answer-no"          => \$opts{'no'},
+        "y|answer-yes"         => \$opts{'yes'},
+        "h|help"               => \$opts{'help'},
+    );
+
+    if ($opts{'help'}) {
+        pod2usage( { -verbose => 1} );
+        exit(0);
+    }
+
+    $opts{'action'} = $actions{'new'};
+    ( $opts{'search'} )   && ($opts{'action'} = $actions{'search'});
+    ( $opts{'update'} )   && ($opts{'action'} = $actions{'update'});
+    ( $opts{'output'} )   && ($opts{'action'} = $actions{'output'});
+    ( $opts{'withdraw'} ) && ($opts{'action'} = $actions{'withdraw'});
+    ( $opts{'publish'} )  && ($opts{'action'} = $actions{'publish'});
+    ( $opts{'delete'} )   && ($opts{'action'} = $actions{'delete'});
+    ( $opts{'output'} )   && ($opts{'action'} = $actions{'output'});
+
+    for ($opts{'env'}) {
+        when (/^d/i) {
+            $opts{'env'} = 'development';
+        }
+        when (/^t/i) {
+            $opts{'env'} = 'testing';
+        }
+        when (/^s/i) {
+            $opts{'env'} = 'staging';
+        }
+        default {
+            $opts{'env'} = 'production';
+        }
+    }
+
+    for ($opts{'filetype'}) {
+        when (/^m/i) {
+            $opts{'filetype'} = 'markdown';
+        }
+        when (/^s/i) {
+            $opts{'filetype'} = 'html';
+        }
+        when (/^t/i) {
+            $opts{'filetype'} = 'txt';
+        }
+    }
+}
+
+sub get_format {
+    my ($filename) = @_;
+    say "Filename : $filename!";
+
+    return $opts{'filetype'} if ($opts{'filetype'});
+    return 'html' if ($filename =~ /\.html?$/i);
+    return 'markdown' if ($filename =~ /\.md$/i);
+    return 'txt';
+}
+
+sub get_user {
+    my ($uid, $login) = @_;
+
+    #return $uid if ($schema->resultset('Poster')->single( { uid => $uid } ));
+
+    $schema->resultset('Poster')->find_or_create(
+        {
+            uid   => $uid,
+            login => $login,
+            name  => $login,
+            admin => 0,
+        },
+        #{ key => 'uid' }
+    ) or croak "Unable to find_or_create new user $login with uid $uid";
+
+    return $uid;
+}
+
+sub get_subject {
+    return $opts{'subject'} if ($opts{'subject'});
+    my ($filename) = @_;
+    my $separator = config->{'space_char'};
+    $filename =~ s/\.[a-z]+$//i;
+    $filename =~ s/.*\///;
+    $filename =~ s/${separator}/ /g;
+    return $filename;
+}
+
+sub ask {
+    my ($question, $default) = @_;
+    $default ||= 'n';
+
+    print "${question} " .
+    (($default =~ /^y/i)? '[Y/n]' : '[y/N]' ) .
+    " ? ";
+
+    if ($opts{'yes'}) {
+        print "y\n";
+        return 1;
+    }
+    elsif ($opts{'no'}) {
+        print "n\n";
+        return 0;
+    }
+
+    chomp(my $answer = <STDIN>);
+    return 1 if (($answer =~ /^y/i) || ($default =~ /^y/i && (!$answer)));
+
+    0;
+}
+
+sub new_post {
+    my @files = @_;
+    my ($login,$pwd,$uid) = getpwuid($<);
+    my $user = get_user($uid, $login);
+
+    for my $file (@files) {
+        say "get_format($file) = " . get_format($file);
+        my $post = $schema->resultset('Post')->create(
+            {
+                uid => $user,
+                format => get_format($file),
+                preview_token => Data::UUID->new()->create_str(),
+                subject => get_subject($file),
+                text => scalar read_file($file),
+                published_date => time,
+            }
+        ) or croak "Unable to insert new post for user $login";
+        my $preview_url = config->{'www_root'} . 'post/' .
+                          $post->id . '/' .
+                          $post->preview_token;
+
+        (ask("Post can be previewed at : $preview_url - publish now"))
+            && $post->publish;
+    }
+}
+
+get_options;
+set environment => $opts{'env'};
+$opts{'action'}(@ARGV);
+
