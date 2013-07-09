@@ -1,0 +1,27 @@
+textarea.fullwidth {
+    box-sizing:     border-box;
+    width:          100%;
+}
+
+input[type=text].fullwidth {
+    box-sizing:     border-box;
+    width:          100%;
+}
+
+.success1 {
+    background-color: #CCFF99;
+    font-weight:      bold;
+}
+
+.success0 {
+    background-color: #FFCCCC;
+    font-weight:      bold;
+}
+
+a.title_link {
+    text-decoration: none;
+}
+
+a.title_link:hover {
+    text-decoration: underline;
+}
