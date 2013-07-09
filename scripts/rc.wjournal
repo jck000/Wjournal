@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Cheap and cheerful sample startup script for wjournal
+
+PERL=`which perl`
+STARMAN=`which starman`
+WWW_ROOT='/home/wjournal/apps/Wjournal/'
+PORT='5555'
+USER='wjournal'
+GROUP='wjournal'
+PIDFILE='/var/run/wjournal.pid'
+
+wj_start() {
+    echo -n "starting Wjournal..."
+    $PERL $STARMAN ${WWW_ROOT}bin/app.pl --port $PORT --user $USER --group $GROUP --daemonize --pid $PIDFILE
+    status=$?
+    if [ "$status" -ne "0" ] ; then
+        echo "failed"
+        exit $status
+    fi
+}
+
+wj_stop() {
+    kill `cat $PIDFILE`
+}
+
+case "$1" in
+'start')
+  wj_start
+  ;;
+'stop')
+  wj_stop
+  ;;
+'restart')
+  wj_stop
+  sleep 1
+  wj_start
+  ;;
+*)
+  echo "usage $0 start|stop|restart"
+esac
+
