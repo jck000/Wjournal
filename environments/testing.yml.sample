@@ -1,0 +1,7 @@
+plugins:
+    DBIC:
+        default:
+            dsn: dbi:SQLite:db/Wj_test.db
+            schema_class: Wjournal::Schema
+            options:
+                sqlite_unicode: 1

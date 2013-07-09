@@ -1,0 +1,66 @@
+# This is your site name as shown on pages and feeds.
+appname: "Wjournal"
+
+# This text will appear below the site name on pages.
+byline:  "Writing it down so I don't forget."
+
+charset:  "UTF-8"
+
+layout:   "main"
+template: "tiny"
+
+engines:
+    template_toolkit:
+        ENCODING: 'utf8'
+        encoding: 'utf8'
+
+plugins:
+    DBIC:
+        default:
+            dsn: dbi:mysql:wjournal
+            user: wjournal
+            pass: wj0urn4l
+            schema_class: Wjournal::Schema
+            options:
+                mysql_enable_utf8: 1
+
+#plugins:
+#    DBIC:
+#        default:
+#            dsn: dbi:SQLite:db/Wjournal.db
+#            schema_class: Wjournal::Schema
+#            options:
+#                sqlite_unicode: 1 # no work, why no?
+
+##plack_middlewares:
+#    -
+#        - Session
+#        - CSRFBlock
+#            - parameter_name
+#            - csrf_secret
+#            - token_length
+#            - 20
+#            - session_key
+#            - csrf_token
+#            - onetime
+#            - 0
+
+posts_per_page: 10
+enable_comment: 1
+
+# See : http://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
+# Format for post and comment date stamps
+date_format:    "%a, %d %b %Y %H:%M"
+
+# Truncate post text to the first couple of paragraphs on pages
+# autostub:       1 - also, implement this
+
+# Truncate post text to the first couple of paragraphs on pages
+# rss_stub:       1 - and this
+
+# Replace this character in file name when using it to form post subject
+space_char:     "_"
+
+# Used by tools and feeds to provide links back to site. Do not leave this as-is!
+www_root:       "http://example.com/"
+

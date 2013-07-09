@@ -1,0 +1,5 @@
+logger: "file"
+log: "warning"
+warnings: 0
+route_cache: 1
+

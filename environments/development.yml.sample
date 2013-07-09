@@ -1,0 +1,6 @@
+logger: "console"
+log: "core"
+warnings: 1
+show_errors: 1
+auto_reload: 1
+traces: 1
