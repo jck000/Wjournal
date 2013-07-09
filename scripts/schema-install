@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+
+use Dancer2 ':syntax';
+use Wjournal;
+
+Wjournal::db_migrate;
+
