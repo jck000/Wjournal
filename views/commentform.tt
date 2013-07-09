@@ -1,0 +1,48 @@
+    <h4>Comment on this post</h4>
+    <p>Text only, no HTML</p>
+    <a id="comment"></a>
+
+    [% IF comment_msg %]
+        <p class="remove-bottom success[% comment_success %]">[% comment_msg %]</p>
+    [% END %]
+
+    <form action="#comment" method="post">
+        <div class="ten columns">
+
+            <div class="row remove-bottom">
+                <div class="three columns alpha">
+                    Name *
+                </div>
+                <div class="seven columns omega">
+                    <input type="text" name="name" value="[% name %]" class="fullwidth" />
+                </div>
+            </div>
+
+            <div class="row remove-bottom">
+                <div class="three columns alpha">
+                    Email Address *
+                </div>
+                <div class="seven columns omega">
+                    <input type="text" name="email" value="[% email %]" class="fullwidth" />
+                </div>
+            </div>
+
+            <div class="row remove-bottom">
+                <div class="three columns alpha">
+                    Website
+                </div>
+                <div class="seven columns omega">
+                    <input type="text" name="website" value="[% website %]" class="fullwidth" />
+                </div>
+            </div>
+
+            <div class="row remove-bottom">
+                <textarea name="two_cents" rows="8" class="fullwidth">[% two_cents %]</textarea>
+            </div>
+
+            <label><input type="checkbox" name="level1" checked /> Uncheck this if you are human</label>
+
+            <input type="submit" value="Comment" />
+
+        </div>
+    </form>

@@ -1,0 +1,38 @@
+<html>
+<head>
+
+    <title>
+        [% title %]
+    </title>
+
+
+    <!-- link rel="stylesheet" href="/css/skeleton/base.css" -->
+    <link rel="stylesheet" href="/css/skeleton/skeleton.css">
+    <link rel="stylesheet" href="/css/skeleton/layout.css">
+    <link rel="stylesheet" href="/css/wjournal_skeleton.css">
+    <link rel="stylesheet" href="/css/wjournal.css">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed/" />
+
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="three columns offset-by-one">
+            <a href="/" class="title_link">
+                <h3>
+                    [% app %]
+                </h3>
+                <h6>
+                    [% byline %]
+                </h6>
+            </a>
+        </div>
+
+        <div class="ten columns offset-by-one">
+            [% content %]
+        </div>
+
+    </div>
+</body>
+</html>

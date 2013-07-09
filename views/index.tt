@@ -1,0 +1,52 @@
+    [% IF posts %]
+
+        [% FOREACH post IN posts %]
+
+            <a href="/post/[% post.id %]/" class="title_link">
+                <h4>
+                    [% post.subject %]
+                </h4>
+            </a>
+
+            <p>
+                [% post.text %]
+            </p>
+
+            <div style="margin-bottom:1em">
+                by <a href="/user/[% post.login %]/">[% post.poster %]</a>
+                on [% post.stamp %].
+                [% UNLESS comments %]<a href="/post/[% post.id %]/">Comment</a>.[% END %]
+            </div>
+
+            [% IF comments %]
+
+                <h4>Comments</h4>
+
+                [% comments %]
+
+                [% IF commentform %]
+
+                    [% commentform %]
+
+                [% ELSE %]
+
+                    <h4>
+                        COMMENTS ARE CLOSED
+                    </h4>
+
+                [% END %]
+
+            [% END %]
+
+            <hr />
+
+        [% END %]
+
+    [% ELSE %]
+
+        <h4>
+            POST DOES NOT EXIST
+        </h4>
+
+    [% END %]
+

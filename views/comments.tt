@@ -1,0 +1,19 @@
+    [% FOREACH comment IN comments %]
+
+        <p>
+            <a id="[% comment.id %]"></a>
+
+                [% IF comment.website %]
+                    <a href='[% comment.website %]'>
+                [% END %][% comment.name %][% IF comment.website %]</a>
+                [% END %]
+
+                on <a href='#[% comment.id %]'>[% comment.stamp %]</a>
+
+            <br />
+
+            [% comment.two_cents %]
+
+        </p><hr />
+
+    [% END %]
