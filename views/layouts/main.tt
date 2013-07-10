@@ -31,6 +31,9 @@
 
         <div class="ten columns offset-by-one">
             [% content %]
+
+            [% IF older %]<a href="[% older %]">&lt; Older</a>[% END %]
+            [% IF newer %]<a href="[% newer %]">Newer &gt;</a>[% END %]
         </div>
 
     </div>
