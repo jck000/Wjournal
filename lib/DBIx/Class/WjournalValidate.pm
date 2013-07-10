@@ -34,7 +34,7 @@ sub _validate_cols {
     for my $col ($self->columns) {
         if (my $validation_sub = $self->column_info($col)->{validate}) {
             my ($success, $msg) = $self->$validation_sub($self->$col);
-            ($success) || $self->throw_exception(($msg) ? $msg : "$col failed validation");
+            ($success) || $self->throw_exception(($msg) ? '<' . $msg . '>' : "<$col failed validation>");
         }
     }
 }
