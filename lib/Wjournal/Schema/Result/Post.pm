@@ -72,6 +72,7 @@ sub render_text {
         when ('txt') {
             my $txt = '<p>' . encode_entities($self->text, '<>&\'"') . '</p>';
             $txt =~ s#\n\s*\n#</p><p>#;
+            Wjournal::linkify(\$txt);
             return $txt;
         }
         when ('markdown') {

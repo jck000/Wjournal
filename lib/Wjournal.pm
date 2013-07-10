@@ -34,6 +34,12 @@ sub db_migrate {
     }
 }
 
+sub linkify {
+    my ($text) = @_;
+    return if (!config->{'linkify'});
+    $$text =~ s/(https?:\/\/[^\s]*)/<a href="$1">$1<\/a>/gi;
+}
+
 # Front page, last #posts_per_page posts from all users.
 
 get '/' => sub {

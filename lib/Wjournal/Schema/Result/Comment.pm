@@ -72,7 +72,9 @@ sub render_email {
 
 sub render_two_cents {
     my ($self) = @_;
-    return encode_entities($self->two_cents, '<>&\'"');
+    my $two_cents = encode_entities($self->two_cents, '<>&\'"');
+    Wjournal::linkify(\$two_cents);
+    return $two_cents;
 }
 
 # RFC 2822 validation is non-trivial, let's just check for at least one
