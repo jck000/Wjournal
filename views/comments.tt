@@ -1,3 +1,5 @@
+    <a id="comments"></a>
+
     [% FOREACH comment IN comments %]
 
         <p>
