@@ -44,15 +44,17 @@ get '/' => sub {
     );
     ($posts) || status 404;
 
-    my $t = template 'index' => {
+    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/page/2" :
+        undef;
+
+    template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
         byline => config->{'byline'},
         posts  => $posts,
+        older  => $old_link,
     };
-
-    print STDERR $t;
-    return $t;
 };
 
 # Other pages of #posts_per_page posts from all users.
@@ -66,11 +68,18 @@ get '/page/:page?' => sub {
     );
     ($posts) || status 404;
 
+    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/page/" . (param('page') + 1) :
+        undef;
+    my $new_link = (param('page') > 1) ? "/page/" . (param('page') - 1) : undef;
+
     template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
         byline => config->{'byline'},
         posts  => $posts,
+        older  => $old_link,
+        newer  => $new_link,
     };
 };
 
@@ -84,11 +93,6 @@ get '/post/:post_id/:post_key?' => sub {
         key         => param('post_key')
     );
     ($posts) || status 404;
-#    use Encode;
-#
-#    Dump( $posts->[0]->{'text'} );
-#    $posts->[0]->{'text'} = decode("UTF-8", $posts->[0]->{'text'});;
-#    Dump( $posts->[0]->{'text'} );
 
     template 'index' => {
         title => config->{'appname'} . ' | '
@@ -129,12 +133,21 @@ get '/user/:login/:page?' => sub {
     );
     ($posts) || status 404;
 
+    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/user/" . param('login') . "/" .  ((param('page') < 2) ? 2 : (param('page')) + 1) :
+        undef;
+    my $new_link = (param('page') > 1) ?
+        "/user/" . param('login') . "/" . (param('page') - 1) :
+        undef;
+
     template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
         byline => config->{'byline'},
         posts  => $posts,
         user   => param('login'),
+        older  => $old_link,
+        newer  => $new_link,
     };
 };
 
@@ -189,8 +202,12 @@ post '/post/:post_id/:post_key?' => sub {
         { method => 'get'};
     }
     catch {
+        my ($msg) = (($_ =~ /WjournalValidate/) ?
+            ($_ =~ /.*<(.*)>.*/) :
+            "Sorry, there was a problem submitting your comment, please try again later.");
+
         return forward "/post/$post_id/$post_key#comment", {
-            comment_msg => $_,
+            comment_msg => $msg,
             comment_success => 0,
         },
         { method => 'get'};
