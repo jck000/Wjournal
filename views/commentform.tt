@@ -3,7 +3,7 @@
     <a id="comment"></a>
 
     [% IF comment_msg %]
-        <p class="remove-bottom success[% comment_success %]">[% comment_msg %]</p>
+        <p class="success[% comment_success %]">[% comment_msg %]</p>
     [% END %]
 
     <form action="#comment" method="post">
