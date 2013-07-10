@@ -15,7 +15,7 @@
             <div style="margin-bottom:1em">
                 by <a href="/user/[% post.login %]/">[% post.poster %]</a>
                 on [% post.stamp %].
-                [% UNLESS comments %]<a href="/post/[% post.id %]/">Comment</a>.[% END %]
+                [% UNLESS comments %]<a href="/post/[% post.id %]/#comments">Comment</a>.[% END %]
             </div>
 
             [% IF comments %]
