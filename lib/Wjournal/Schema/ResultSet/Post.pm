@@ -42,7 +42,7 @@ sub get_rendered {
         };
     }
 
-    return (@rendered_posts) ? \@rendered_posts : undef;
+    return ((@rendered_posts) ? \@rendered_posts : undef);
 }
 
 sub active {

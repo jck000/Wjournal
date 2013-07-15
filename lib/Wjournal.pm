@@ -50,15 +50,15 @@ get '/' => sub {
     );
     ($posts) || status 404;
 
-    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
         "/page/2" :
-        undef;
+        undef);
 
     template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
         byline => config->{'byline'},
-        posts  => $posts,
+        posts  => $posts || undef,
         older  => $old_link,
     };
 };
@@ -74,10 +74,12 @@ get '/page/:page?' => sub {
     );
     ($posts) || status 404;
 
-    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
         "/page/" . (param('page') + 1) :
-        undef;
-    my $new_link = (param('page') > 1) ? "/page/" . (param('page') - 1) : undef;
+        undef);
+    ($posts) && (my $new_link = (param('page') > 1) ?
+        "/page/" . (param('page') - 1) :
+        undef);
 
     template 'index' => {
         title  => config->{'appname'},
@@ -100,12 +102,14 @@ get '/post/:post_id/:post_key?' => sub {
     );
     ($posts) || status 404;
 
+    use DDP; p $posts;
+
     template 'index' => {
         title => config->{'appname'} . ' | '
           . ( ($posts) ? $posts->[0]->{'subject'} : 'Not found' ),
         app         => config->{'appname'},
         byline      => config->{'byline'},
-        posts       => $posts,
+        posts       => $posts || undef,
         commentform => template(
             'commentform' => {
                 param('comment_success') ? () :
@@ -139,18 +143,19 @@ get '/user/:login/:page?' => sub {
     );
     ($posts) || status 404;
 
-    my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
-        "/user/" . param('login') . "/" .  ((param('page') < 2) ? 2 : (param('page')) + 1) :
-        undef;
-    my $new_link = (param('page') > 1) ?
+    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/user/" . param('login') . "/" .
+            ((param('page') < 2) ? 2 : (param('page')) + 1) :
+        undef);
+    ($posts) && (my $new_link = (param('page') > 1) ?
         "/user/" . param('login') . "/" . (param('page') - 1) :
-        undef;
+        undef);
 
     template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
         byline => config->{'byline'},
-        posts  => $posts,
+        posts  => $posts || undef,
         user   => param('login'),
         older  => $old_link,
         newer  => $new_link,
@@ -168,15 +173,15 @@ get '/feed/:login?' => sub {
     my $posts =
       $schema->resultset('Post')->get_rendered( login => param('login'), );
     $rss->channel(
-        title   => config->{'appname'},
-        byline  => config->{'byline'},
-        link    => config->{'www_root'},
-        pubDate => $posts->[0]->{'rss_stamp'},
+        title       => config->{'appname'},
+        description => config->{'byline'},
+        link        => config->{'www_root'},
+        pubDate     => $posts->[0]->{'rss_stamp'},
     );
     for my $post ( @{$posts} ) {
         $rss->add_item(
             title       => $post->{'subject'},
-            permaLink   => config->{'www_root'} . "post/" . $post->{'id'},
+            permaLink   => config->{'www_root'} . "post/" . $post->{'id'} . '/',
             description => $post->{'text'},
         );
     }
@@ -234,6 +239,8 @@ system built on Perl5 and Dancer2.
 =head1 SYNOPSIS
 
 See L</DEPLOYMENT>
+
+Site is currently deployed (as of July 2013) on http://www.fuzzix.org/
 
 =head1 DESCRIPTION
 
@@ -431,20 +438,33 @@ of the wjournal group to post:
  # find /home/wjournal/apps/Wjournal -type d -exec chmod 0750 {} +
  # find /home/wjournal/apps/Wjournal -type f -exec chmod 0640 {} +
 
+If you want to serve static content directly from your server, you'll
+need to give it access:
+
+ # find /home/wjournal/apps/Wjournal/public -type d -exec chmod 0751 {} +
+ # find /home/wjournal/apps/Wjournal/public -type f -exec chmod 0644 {} +
+
+And if allowing hosting images/files with the upload script:
+
+ # chmod 0771 /home/wjournal/apps/Wjournal/public/uploads
+
+And finally, make scripts executable:
+
+ # chmod 0750 /home/wjournal/apps/Wjournal/scripts/*
+
 If using SQLite, you should set the database to be writable by the
 whole group:
 
  # chmod 0660 /home/wjournal/apps/Wjournal/db/Wjournal.db
-
-And if allowing hosting images/files with the upload script:
-
- # chmod 0770 /home/wjournal/apps/Wjournal/public/uploads
 
 Then:
 
  # chown -R wjournal:wjournal /home/wjournal/apps/Wjournal
 
 Where wjournal:wjournal are the hosting user:group you have configured.
+
+I recommend creating a script setting up these permissions to ease
+installation and upgrades.
 
 Users can add /home/wjournal/apps/Wjournal/scripts to their path or
 create links to the scripts they require to a directory in their path
@@ -475,11 +495,11 @@ found in sql/.
 
 =head1 TODO
 
+ - Consolidate template construction.
  - Posting from GPG signed mail?
  - Posting from a git repository?
  - Comment moderation queue, auto-allow commenters (based on email?
    Cookie?).
- - Trackbacks?
 
 =head1 SUPPORT
 
