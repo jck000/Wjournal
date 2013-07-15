@@ -102,8 +102,6 @@ get '/post/:post_id/:post_key?' => sub {
     );
     ($posts) || status 404;
 
-    use DDP; p $posts;
-
     template 'index' => {
         title => config->{'appname'} . ' | '
           . ( ($posts) ? $posts->[0]->{'subject'} : 'Not found' ),
