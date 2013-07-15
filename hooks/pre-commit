@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# pre-commit hook to generate README from lib/Wjournal.pm and add
+# it to the staging area.
+# Install to / link into .git/hooks
+
+ROOT="$(git rev-parse --show-toplevel)"
+README="${ROOT}/README.pod"
+
+git diff --cached --name-only | while read file ; do
+    printf "Checking File $file\n"
+    if [[ "$file" == "lib/Wjournal.pm" ]] ; then
+        printf "Generating README.pod..."
+        perldoc -o pod "${ROOT}/lib/Wjournal.pm" > "${README}"
+        git add "${README}"
+        printf "\nGenerated new README.pod from commit-msg hook\n"
+    fi
+done
+
+

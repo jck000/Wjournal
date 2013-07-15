@@ -9,6 +9,8 @@ system built on Perl5 and Dancer2.
 
 See L</DEPLOYMENT>
 
+Site is currently deployed (as of July 2013) on http://www.fuzzix.org/
+
 =head1 DESCRIPTION
 
 Wjournal is yet another blog engine, to salve the author's NIH shakes.
@@ -152,7 +154,6 @@ Install:
 Perl (v5.10.1 or later by my reckoning)
 Dancer2
 Dancer2::Plugin::DBIC
-?Dancer2::Plugin::Feed
 Data::UUID
 File::Slurp
 HTML::Entities
@@ -206,20 +207,33 @@ of the wjournal group to post:
  # find /home/wjournal/apps/Wjournal -type d -exec chmod 0750 {} +
  # find /home/wjournal/apps/Wjournal -type f -exec chmod 0640 {} +
 
+If you want to serve static content directly from your server, you'll
+need to give it access:
+
+ # find /home/wjournal/apps/Wjournal/public -type d -exec chmod 0751 {} +
+ # find /home/wjournal/apps/Wjournal/public -type f -exec chmod 0644 {} +
+
+And if allowing hosting images/files with the upload script:
+
+ # chmod 0771 /home/wjournal/apps/Wjournal/public/uploads
+
+And finally, make scripts executable:
+
+ # chmod 0750 /home/wjournal/apps/Wjournal/scripts/*
+
 If using SQLite, you should set the database to be writable by the
 whole group:
 
  # chmod 0660 /home/wjournal/apps/Wjournal/db/Wjournal.db
-
-And if allowing hosting images/files with the upload script:
-
- # chmod 0770 /home/wjournal/apps/Wjournal/public/uploads
 
 Then:
 
  # chown -R wjournal:wjournal /home/wjournal/apps/Wjournal
 
 Where wjournal:wjournal are the hosting user:group you have configured.
+
+I recommend creating a script setting up these permissions to ease
+installation and upgrades.
 
 Users can add /home/wjournal/apps/Wjournal/scripts to their path or
 create links to the scripts they require to a directory in their path
@@ -250,11 +264,11 @@ found in sql/.
 
 =head1 TODO
 
+ - Consolidate template construction.
  - Posting from GPG signed mail?
  - Posting from a git repository?
  - Comment moderation queue, auto-allow commenters (based on email?
    Cookie?).
- - Trackbacks?
 
 =head1 SUPPORT
 

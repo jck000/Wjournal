@@ -384,7 +384,6 @@ Install:
 Perl (v5.10.1 or later by my reckoning)
 Dancer2
 Dancer2::Plugin::DBIC
-?Dancer2::Plugin::Feed
 Data::UUID
 File::Slurp
 HTML::Entities
