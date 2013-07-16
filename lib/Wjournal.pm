@@ -385,6 +385,7 @@ Dancer2::Plugin::DBIC
 Data::UUID
 File::Slurp
 HTML::Entities
+HTML::TreeBuilder
 !Plack::Middleware::CSRFBlock
 !Plack::Middleware::Session
 Text::Markdown

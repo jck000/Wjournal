@@ -6,6 +6,7 @@ use warnings;
 use base qw/DBIx::Class::Core/;
 
 use HTML::Entities;
+use HTML::TreeBuilder;
 use Text::Markdown 'markdown';
 use v5.10.1;
 
@@ -51,7 +52,7 @@ __PACKAGE__->add_columns(
     },
     text => {
         data_type => 'text',
-        # validate  => 'validate_text', - hmm, why did I put this here?
+        validate  => 'validate_text',
     },
 );
 
@@ -88,6 +89,17 @@ sub validate_subject {
     return 0, "Newline in subject" if $self->subject =~ /[\r\n]/;
 
     1;
+}
+
+sub validate_text {
+    my ($self) = @_;
+    return 1 if $self->format !~ /html/i;
+
+    # This serves nicely to close hanging open tags.
+    my $tree = HTML::TreeBuilder->new();
+    $tree->parse($self->text);
+    $tree->eof();
+    $self->text($tree->guts(0)->as_HTML);
 }
 
 sub publish {
