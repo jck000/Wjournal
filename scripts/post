@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use v5.10.1;
+use autodie;
 
 use Dancer2 ':script';
 use Wjournal;
@@ -23,6 +24,8 @@ my %actions = (
     new      => \&new_post,
 );
 
+    my ($login, $pwd, $uid) = getpwuid($<);
+    my $user = get_user($uid, $login);
 my $schema = Wjournal::schema('default');
 my %opts;
 
@@ -38,12 +41,12 @@ sub get_options {
         "S|subject"            => \$opts{'subject'},
         "p|publish-post=i"     => \$opts{'publish'},
         "w|withdraw-post=i"    => \$opts{'withdraw'},
-        "o|output-post"        => \$opts{'output'},
+        "o|output-post:s"      => \$opts{'output'},
         "d|delete-post"        => \$opts{'delete'},
-        "D|really-delete-post" => \$opts{'reallydelete'},
+        "D|disable-comment"    => \$opts{'nocomment'},
         "f|filetype"           => \$opts{'filetype'},
         "N|answer-no"          => \$opts{'no'},
-        "y|answer-yes"         => \$opts{'yes'},
+        "Y|answer-yes"         => \$opts{'yes'},
         "h|help"               => \$opts{'help'},
     );
 
@@ -91,7 +94,6 @@ sub get_options {
 
 sub get_format {
     my ($filename) = @_;
-    say "Filename : $filename!";
 
     return $opts{'filetype'} if ($opts{'filetype'});
     return 'html' if ($filename =~ /\.html?$/i);
@@ -102,8 +104,6 @@ sub get_format {
 sub get_user {
     my ($uid, $login) = @_;
 
-    #return $uid if ($schema->resultset('Poster')->single( { uid => $uid } ));
-
     $schema->resultset('Poster')->find_or_create(
         {
             uid   => $uid,
@@ -111,7 +111,6 @@ sub get_user {
             name  => $login,
             admin => 0,
         },
-        #{ key => 'uid' }
     ) or croak "Unable to find_or_create new user $login with uid $uid";
 
     return $uid;
@@ -152,11 +151,8 @@ sub ask {
 
 sub new_post {
     my @files = @_;
-    my ($login,$pwd,$uid) = getpwuid($<);
-    my $user = get_user($uid, $login);
 
     for my $file (@files) {
-        say "get_format($file) = " . get_format($file);
         my $post = $schema->resultset('Post')->create(
             {
                 uid => $user,
@@ -165,6 +161,7 @@ sub new_post {
                 subject => get_subject($file),
                 text => scalar read_file($file),
                 published_date => time,
+                disable_comment => $opts{'nocomment'},
             }
         ) or croak "Unable to insert new post for user $login";
         my $preview_url = config->{'www_root'} . 'post/' .
