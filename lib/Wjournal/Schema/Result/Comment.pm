@@ -93,8 +93,10 @@ sub validate_website {
     my ($self) = @_;
 
     return 1 if (!$self->website);
+
+    $self->website('http://' . $self->website) if $self->website !~ /^https?:\/\//i;
+
     return 0, "Newline in website" if $self->website =~ /[\r\n]/;
-    return 0, "HTTP(S) URLs only" if $self->website !~ /^https?:\/\//i;
 
     1;
 }
