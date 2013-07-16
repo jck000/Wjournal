@@ -1,9 +1,107 @@
 #!/usr/bin/env perl
 
-use Dancer2 ':syntax';
-use Wjournal::Schema;
-use Getopt::Long;
-use Carp;
-use File::Basename;
+use v5.10.1;
+use autodie;
 
+use Dancer2 ':syntax';
+use Wjournal;
+use Getopt::Long qw/:config no_ignore_case bundling/;
+use Carp;
+use File::Basename qw/!dirname/;
+use File::Copy;
+use File::Path qw/make_path/;
+use Image::Imlib2;
+
+my %actions = (
+    search   => \&search_uploads,
+    list     => \&list_uploads,
+    delete   => \&delete_upload,
+    upload   => \&upload_new,
+);
+
+my %opts;
+my ($login, $pwd, $uid) = getpwuid($<);
+my $outdir = config->{appdir} . "/public/uploads/${login}";
+
+sub get_options {
+    $opts{'env'} = 'production';
+    $opts{'filetype'} = '';
+
+    GetOptions(
+        "e|env=s"              => \$opts{'env'},
+        "u|upload"             => \$opts{'upload'},
+        "l|list-filess"        => \$opts{'list'},
+        "d|delete-file=s"      => \$opts{'delete'},
+        "r|resize:i"           => \$opts{'resize'},
+        "t|thumbnail:i"        => \$opts{'thumb'},
+        "N|answer-no"          => \$opts{'no'},
+        "Y|answer-yes"         => \$opts{'yes'},
+        "h|help"               => \$opts{'help'},
+    );
+
+    if ($opts{'help'}) {
+        pod2usage( { -verbose => 1} );
+        exit(0);
+    }
+
+    (defined $opts{'thumb'}) && ($opts{'thumb'} == 0)  && ($opts{'thumb'}  = 140);
+    (defined $opts{'resize'}) && ($opts{'resize'} == 0) && ($opts{'resize'} = 580);
+
+    $opts{'action'} = $actions{'upload'};
+    ( $opts{'list'} )     && ($opts{'action'} = $actions{'list'});
+    ( $opts{'delete'} )   && ($opts{'action'} = $actions{'delete'});
+
+    for ($opts{'env'}) {
+        when (/^d/i) {
+            $opts{'env'} = 'development';
+        }
+        when (/^t/i) {
+            $opts{'env'} = 'testing';
+        }
+        when (/^s/i) {
+            $opts{'env'} = 'staging';
+        }
+        default {
+            $opts{'env'} = 'production';
+        }
+    }
+}
+
+sub upload_new {
+    my @uploaded = ();
+    for my $file (@_) {
+        my ($basename, $ext) = basename($file) =~ /(.*)\.([^\.]*)/;
+        my $img = Image::Imlib2->load($file);
+
+        if ($img) {
+            if ($opts{'thumb'}) {
+                my $thm = $img->create_scaled_image($opts{'thumb'}, 0);
+                my $filename = "${basename}_thm.${ext}";
+                $thm->save("${outdir}/${filename}");
+                chmod 0644, "${outdir}/${filename}";
+                push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+            }
+            ($opts{'resize'}) && ($img = $img->create_scaled_image($opts{'resize'}, 0));
+
+            my $filename = "${basename}.${ext}";
+            print "${outdir}/${filename}\n";
+            $img->save("${outdir}/${filename}");
+            chmod 0644, "${outdir}/${filename}";
+            push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+        }
+        else {
+            my $filename = "${basename}.${ext}";
+            copy $file, "${outdir}/${filename}";
+            chmod 0644, "${outdir}/${filename}";
+            push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+        }
+    }
+
+    print "Files uploaded available at : \n", join "\n", @uploaded, "\n";
+}
+
+get_options;
+set environment => $opts{'env'};
+make_path($outdir, { mode => 0771 });
+$opts{'action'}(@ARGV);
 
