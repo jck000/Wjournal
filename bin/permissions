@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Run from within Wjournal installation directory.
+
+USER='wjournal'
+GROUP='wjournal'
+
+find . -type d -exec chmod 0750 {} +
+find . -type f -exec chmod 0640 {} +
+find ./public -type d -exec chmod 0751 {} +
+find ./public -type f -exec chmod 0644 {} +
+
+if [ ! -d ./public/uploads ] ; then
+    install -m0771 -d ./public/uploads
+fi
+
+chmod 0771 ./public/uploads
+chmod 0750 ./scripts/*
+
+if [ -e ./db/Wjournal.db ] ; then
+    chmod 0660 ./db/Wjournal.db
+fi
+
+chown -R $USER:$GROUP .
+
