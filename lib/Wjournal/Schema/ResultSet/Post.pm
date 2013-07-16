@@ -38,6 +38,7 @@ sub get_rendered {
             login => $post->poster->login,
             rss_stamp => strftime("%a, %d %b %Y %H:%M:%S %z", localtime($post->published_date)),
             stamp => strftime($date_format, localtime($post->published_date)),
+            disable_comment => $post->disable_comment,
             comments => (($params{'id'}) ? $post->comments->approved->get_rendered( date_format => $date_format) : ()),
         };
     }

@@ -9,8 +9,6 @@ use XML::RSS;
 use Try::Tiny;
 use HTML::Entities;
 
-use Devel::Peek;
-
 our $VERSION = '0.01';
 
 sub db_migrate {
@@ -108,8 +106,14 @@ get '/post/:post_id/:post_key?' => sub {
         app         => config->{'appname'},
         byline      => config->{'byline'},
         posts       => $posts || undef,
-        commentform => template(
-            'commentform' => {
+        comments => template(
+            'comments' => {
+                comments => $posts->[0]->{'comments'},
+            },
+            { layout => undef }
+        ),
+        commentform => ($posts->[0]->{'disable_comment'} || config->{'disable_comment'}) ? () :
+            template('commentform' => {
                 param('comment_success') ? () :
                 (name => encode_entities(param('name', '<>&\'"')),
                 website => encode_entities(param('website', '<>&\'"')),
@@ -117,12 +121,6 @@ get '/post/:post_id/:post_key?' => sub {
                 two_cents => encode_entities(param('two_cents', '<>&\'"'))),
                 comment_msg => param('comment_msg'),
                 comment_success => param('comment_success'),
-            },
-            { layout => undef }
-        ),
-        comments => template(
-            'comments' => {
-                comments => $posts->[0]->{'comments'},
             },
             { layout => undef }
         ),
@@ -272,7 +270,7 @@ scripts/post also Has delete/update/search and other control features
 for posts.
 
 Currently supported file types are Markdown (as interpreted by
-L<Text::Markdown>), plain text (presented with HTML::Entities) and
+L<Text::Markdown>), plain text (presented with L<HTML::Entities>) and
 HTML.
 
 Default operation of scripts/post is to derive the subject line from
@@ -284,7 +282,7 @@ $ scripts/post This_is_a_new_post.md
 ...will create a new markdown post with subject "This is a new post",
 provide a URL to preview the post and provide the option of publishing.
 Unpublished posts essentially remain private, with access controlled by
-their unique URL.
+their unique URL - without the key appended the post is not accessible.
 
 =head1 FILE MANAGEMENT
 
@@ -301,21 +299,6 @@ There is currently no comment management/queueing system implemented,
 though there are plans to create one.
 
 Current spam mitigation amounts to a trivial "Are you human?" check.
-
-=for comment
-
-B<NOTE : CSRF CURRENTLY NOT IMPLEMENTED>
-
-A simple pair of mechanisms are used to mitigate potential spam, CSRF
-Session validation and a trivial "human" check. The CSRF validation
-does not report an HTTP error in order to not provide too many clues to
-form bots, though a human should spot something is wrong.
-
-It's still fairly trivial to automate comment submission
-programatically, the intent of these measures is just to take ourselves
-out of the set of very low hanging fruit.
-
-=cut
 
 =head1 USER MANAGEMENT
 
@@ -386,18 +369,13 @@ Data::UUID
 File::Slurp
 HTML::Entities
 HTML::TreeBuilder
-!Plack::Middleware::CSRFBlock
-!Plack::Middleware::Session
+Image::Imlib2
 Text::Markdown
 URI::Escape
 
 Recommended:
 
 Starman
-
-While site contents are not managed from the web frontend itself, the
-Plack middlewares listed above are part of the anti-spam strategy for
-comments.
 
 Install this code to a location accessible to the user serving it.
 Depending on how you choose to deploy this could be apache's user
@@ -462,7 +440,8 @@ Then:
 Where wjournal:wjournal are the hosting user:group you have configured.
 
 I recommend creating a script setting up these permissions to ease
-installation and upgrades.
+installation and upgrades. A sample script exists in bin/permissions
+which may work for you as-is.
 
 Users can add /home/wjournal/apps/Wjournal/scripts to their path or
 create links to the scripts they require to a directory in their path

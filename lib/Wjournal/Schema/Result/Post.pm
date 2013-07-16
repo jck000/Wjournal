@@ -38,6 +38,11 @@ __PACKAGE__->add_columns(
         is_nullable   => 1,
         default_value => 0,
     },
+    disable_comment => {
+        data_type     => 'integer',
+        is_nullable   => 1,
+        default_value => 0,
+    },
     preview_token => {
         data_type => 'char',
         size      => 36

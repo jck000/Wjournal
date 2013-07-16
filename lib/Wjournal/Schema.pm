@@ -6,7 +6,7 @@ use warnings;
 use base qw/DBIx::Class::Schema/;
 
 # Schema version, used in database deployment
-our $VERSION = 2;
+our $VERSION = 3;
 
 __PACKAGE__->load_namespaces();
 __PACKAGE__->stacktrace(0);

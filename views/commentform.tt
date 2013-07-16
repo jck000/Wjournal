@@ -1,5 +1,5 @@
     <h4>Comment on this post</h4>
-    <p>Text only, no HTML</p>
+    <p>Text only, no HTML, * denotes a required field.</p>
     <a id="comment"></a>
 
     [% IF comment_msg %]
