@@ -24,10 +24,11 @@ my %actions = (
     new      => \&new_post,
 );
 
-    my ($login, $pwd, $uid) = getpwuid($<);
-    my $user = get_user($uid, $login);
 my $schema = Wjournal::schema('default');
 my %opts;
+
+my ($login, $pwd, $uid) = getpwuid($<);
+my $user = get_user($uid, $login);
 
 sub get_options {
     $opts{'env'} = 'production';
