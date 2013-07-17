@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+APP_DIR=$(dirname $(realpath $0))'/..'
+cd $APP_DIR
+
+bin/rc.wjournal stop
+
+if [ !-z $1 ] ; then
+    git fetch $1
+    if [ "$?" -eq "0" ] ; then
+        git checkout $1
+    fi
+else
+    git pull
+fi
+
+bin/rc.wjournal start

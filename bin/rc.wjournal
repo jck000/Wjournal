@@ -1,23 +1,29 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Cheap and cheerful sample startup script for wjournal
 
 PERL=`which perl`
 STARMAN=`which starman`
-WWW_ROOT='/home/wjournal/apps/Wjournal/'
-PORT='5555'
-USER='wjournal'
+USER=`whoami`
 GROUP='wjournal'
-PIDFILE='/var/run/wjournal.pid'
+WWW_ROOT=$(dirname $(realpath $0))'/../'
+PORT='5555'
+WORKERS=5
+PIDDDIR="${WWW_ROOT}var/"
+PIDFILE="${PIDDDIR}wjournal.pid"
+export DANCER_ENVIRONMENT=production
 
 wj_start() {
     echo -n "starting Wjournal..."
-    $PERL $STARMAN ${WWW_ROOT}bin/app.pl --port $PORT --user $USER --group $GROUP --daemonize --pid $PIDFILE
+    if [ ! -d ${PIDDDIR} ] ; then install -m0750 -d ${PIDDDIR} ; fi
+    $PERL $STARMAN ${WWW_ROOT}bin/app.pl --port $PORT --daemonize --pid $PIDFILE --workers $WORKERS
+
     status=$?
     if [ "$status" -ne "0" ] ; then
         echo "failed"
         exit $status
     fi
+    echo "started"
 }
 
 wj_stop() {
