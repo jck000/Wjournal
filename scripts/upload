@@ -21,7 +21,8 @@ my %actions = (
 
 my %opts;
 my ($login, $pwd, $uid) = getpwuid($<);
-my $outdir = config->{appdir} . "/public/uploads/${login}";
+my $uploads = "uploads/${login}/";
+my $outdir = config->{appdir} . "/public/${uploads}";
 
 sub get_options {
     $opts{'env'} = 'production';
@@ -67,37 +68,70 @@ sub get_options {
     }
 }
 
+sub ask {
+    my ($question, $default) = @_;
+    $default ||= 'n';
+
+    print "${question} " .
+    (($default =~ /^y/i)? '[Y/n]' : '[y/N]' ) .
+    " ? ";
+
+    if ($opts{'yes'}) {
+        print "y\n";
+        return 1;
+    }
+    elsif ($opts{'no'}) {
+        print "n\n";
+        return 0;
+    }
+
+    chomp(my $answer = <STDIN>);
+    return 1 if (($answer =~ /^y/i) || ($default =~ /^y/i && (!$answer)));
+
+    0;
+}
+
+
+sub overwrite {
+    my ($filename) = @_;
+    return 1 if !(-e $filename);
+    ask("${filename} exists, overwrite");
+}
+
 sub upload_new {
     my @uploaded = ();
+    my $img_save = sub {
+        my ($img, $filename) = @_;
+        return () if !overwrite("${outdir}/${filename}");
+        $img->save("${outdir}/${filename}");
+        chmod 0644, "${outdir}/${filename}";
+        return config->{'www_root'} . $uploads . $filename;
+    };
+
     for my $file (@_) {
         my ($basename, $ext) = basename($file) =~ /(.*)\.([^\.]*)/;
+        $basename ||= basename($file);
+        my $filename = "${basename}" . (($ext)? ".${ext}" : "");
         my $img = Image::Imlib2->load($file);
 
         if ($img) {
             if ($opts{'thumb'}) {
                 my $thm = $img->create_scaled_image($opts{'thumb'}, 0);
-                my $filename = "${basename}_thm.${ext}";
-                $thm->save("${outdir}/${filename}");
-                chmod 0644, "${outdir}/${filename}";
-                push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+                my $filename = "${basename}_thm" . (($ext)? ".${ext}" : "");
+                push @uploaded, $img_save->($thm, $filename);
             }
             ($opts{'resize'}) && ($img = $img->create_scaled_image($opts{'resize'}, 0));
-
-            my $filename = "${basename}.${ext}";
-            print "${outdir}/${filename}\n";
-            $img->save("${outdir}/${filename}");
-            chmod 0644, "${outdir}/${filename}";
-            push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+            push @uploaded, $img_save->($img, $filename);
         }
         else {
-            my $filename = "${basename}.${ext}";
+            next if !overwrite("${outdir}/${filename}");
             copy $file, "${outdir}/${filename}";
             chmod 0644, "${outdir}/${filename}";
-            push @uploaded, config->{'www_root'} . 'uploads/' . $filename;
+            push @uploaded, config->{'www_root'} . $uploads . $filename;
         }
     }
 
-    print "Files uploaded available at : \n", join "\n", @uploaded, "\n";
+    print "Files uploaded:\n", (join "\n", @uploaded), "\n" if (@uploaded);
 }
 
 get_options;
