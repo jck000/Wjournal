@@ -34,7 +34,7 @@ plugins:
 #                sqlite_unicode: 1 # no work, why no?
 
 posts_per_page: 10
-disable_comment: 1
+disable_comment: 0
 
 # Generate links from http(s):// URLs in plain text posts and comments:
 linkify: 1
