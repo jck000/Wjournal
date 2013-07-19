@@ -73,6 +73,7 @@ sub render_email {
 sub render_two_cents {
     my ($self) = @_;
     my $two_cents = encode_entities($self->two_cents, '<>&\'"');
+    $two_cents =~ s#\n#<br />#g;
     Wjournal::linkify(\$two_cents);
     return $two_cents;
 }
