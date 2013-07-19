@@ -8,6 +8,7 @@ use Dancer2::Plugin::DBIC 'schema';
 use XML::RSS;
 use Try::Tiny;
 use HTML::Entities;
+use URI::Encode qw/uri_encode uri_decode/;
 
 our $VERSION = '0.01';
 
@@ -38,6 +39,15 @@ sub linkify {
     $$text =~ s/(https?:\/\/[^\s]*)/<a href="$1">$1<\/a>/gi;
 }
 
+sub render_posts{
+    template 'index' => {
+        title  => config->{'appname'},
+        app    => config->{'appname'},
+        byline => config->{'byline'},
+        @_,
+    }
+}
+
 # Front page, last #posts_per_page posts from all users.
 
 get '/' => sub {
@@ -52,18 +62,50 @@ get '/' => sub {
         "/page/2" :
         undef);
 
-    template 'index' => {
-        title  => config->{'appname'},
-        app    => config->{'appname'},
-        byline => config->{'byline'},
+    render_posts(
         posts  => $posts || undef,
         older  => $old_link,
-    };
+    );
+};
+
+# Basic AND search of supplied terms across all text
+
+get '/search/:terms/:page?' => sub {
+    my $schema = schema('default');
+    my $posts  = $schema->resultset('Post')->get_rendered(
+        date_format  => config->{'date_format'},
+        rows         => config->{'posts_per_page'},
+        search_terms => uri_decode(param('terms')),
+        page         => param('page')
+    );
+    ($posts) || status 404;
+
+    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/2" :
+        undef);
+    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
+        "/search/" . param('terms') . '/' . (param('page')? param('page') + 1 : 2) :
+        undef);
+    ($posts) && (my $new_link = (param('page') > 1) ?
+        "/search/" . param('terms') . '/' .  (param('page') - 1) :
+        undef);
+
+
+    render_posts(
+        posts       => $posts || undef,
+        older       => $old_link,
+        newer       => $new_link,
+        searching   => 1,
+    );
+};
+
+post '/search' => sub {
+    redirect '/search/' . uri_encode(param('terms')) . '/';
 };
 
 # Other pages of #posts_per_page posts from all users.
 
-get '/page/:page?' => sub {
+get '/page/:page' => sub {
     my $schema = schema('default');
     my $posts  = $schema->resultset('Post')->get_rendered(
         date_format => config->{'date_format'},
@@ -79,15 +121,14 @@ get '/page/:page?' => sub {
         "/page/" . (param('page') - 1) :
         undef);
 
-    template 'index' => {
-        title  => config->{'appname'},
-        app    => config->{'appname'},
-        byline => config->{'byline'},
+    render_posts(
         posts  => $posts,
         older  => $old_link,
         newer  => $new_link,
-    };
+    );
 };
+
+
 
 # Single post with preview key + rendered comments
 
@@ -100,11 +141,9 @@ get '/post/:post_id/:post_key?' => sub {
     );
     ($posts) || status 404;
 
-    template 'index' => {
+    render_posts(
         title => config->{'appname'} . ' | '
           . ( ($posts) ? $posts->[0]->{'subject'} : 'Not found' ),
-        app         => config->{'appname'},
-        byline      => config->{'byline'},
         posts       => $posts || undef,
         comments => template(
             'comments' => {
@@ -124,7 +163,7 @@ get '/post/:post_id/:post_key?' => sub {
             },
             { layout => undef }
         ),
-    };
+    );
 };
 
 # Posts for a single user, with optional page #
@@ -147,15 +186,12 @@ get '/user/:login/:page?' => sub {
         "/user/" . param('login') . "/" . (param('page') - 1) :
         undef);
 
-    template 'index' => {
-        title  => config->{'appname'},
-        app    => config->{'appname'},
-        byline => config->{'byline'},
+    render_posts(
         posts  => $posts || undef,
         user   => param('login'),
         older  => $old_link,
         newer  => $new_link,
-    };
+    );
 };
 
 # RSS feed, can be limited to a single user.
@@ -231,6 +267,12 @@ __END__
 
 Wjournal - The Welterweight (i.e. not quite Lightweight) blogging
 system built on Perl5 and Dancer2.
+
+Wjournal uses the Skeleton CSS framework:
+http://www.getskeleton.com/
+
+Wjournal uses icons from somerandomsuse's Iconic set:
+http://somerandomdude.com/work/iconic/
 
 =head1 SYNOPSIS
 

@@ -5,6 +5,12 @@
 Wjournal - The Welterweight (i.e. not quite Lightweight) blogging
 system built on Perl5 and Dancer2.
 
+Wjournal uses the Skeleton CSS framework:
+http://www.getskeleton.com/
+
+Wjournal uses icons from somerandomsuse's Iconic set:
+http://somerandomdude.com/work/iconic/
+
 =head1 SYNOPSIS
 
 See L</DEPLOYMENT>

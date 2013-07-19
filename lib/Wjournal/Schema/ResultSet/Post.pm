@@ -15,7 +15,12 @@ sub get_rendered {
 
     my @rendered_posts;
 
-    delete @params{qw/date_format login page rows/};
+    if ($params{'search_terms'}) {
+        my @search_terms = split /\s+/, $params{'search_terms'};
+        map { $_ = "%${_}%" } @search_terms;
+        $params{'text'} = [ -and => map{ like => $_ }, @search_terms ];
+    }
+    delete @params{qw/date_format login page rows search_terms/};
 
     my $posts = ($params{'id'}) ?
         $self->verified (\%params)

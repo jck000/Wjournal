@@ -8,6 +8,11 @@ input[type=text].fullwidth {
     width:          100%;
 }
 
+input[type=text].lesswidth {
+    box-sizing:     border-box;
+    width:          85%;
+}
+
 .success1 {
     background-color: #CCFF99;
     font-weight:      bold;
@@ -16,6 +21,13 @@ input[type=text].fullwidth {
 .success0 {
     background-color: #FFCCCC;
     font-weight:      bold;
+}
+
+img.icon {
+    float: left;
+    padding-right: 5px;
+    padding-top: 3px;
+    display: inline-block;
 }
 
 a.title_link {

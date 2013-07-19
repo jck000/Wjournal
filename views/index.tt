@@ -45,7 +45,11 @@
     [% ELSE %]
 
         <h4>
-            POST DOES NOT EXIST
+            [% IF searching %]
+                POST NOT FOUND
+            [% ELSE %]
+                POST DOES NOT EXIST
+            [% END %]
         </h4>
 
     [% END %]

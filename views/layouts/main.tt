@@ -27,6 +27,12 @@
                     [% byline %]
                 </h6>
             </a>
+
+            <form action="/search" method="post">
+                <img src="/images/iconic/black/magnifying_glass_16x16.png" class="icon" /> <input type="text" name="terms" class="lesswidth">
+            </form>
+            <a href="/feed/" class="title_link"><img src="/images/iconic/black/rss_16x16.png" class="icon" />Subscribe</a>
+
         </div>
 
         <div class="ten columns offset-by-one">
