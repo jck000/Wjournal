@@ -81,9 +81,6 @@ get '/search/:terms/:page?' => sub {
     ($posts) || status 404;
 
     ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
-        "/2" :
-        undef);
-    ($posts) && (my $old_link = (scalar @{$posts} >= config->{'posts_per_page'}) ?
         "/search/" . param('terms') . '/' . (param('page')? param('page') + 1 : 2) :
         undef);
     ($posts) && (my $new_link = (param('page') > 1) ?
