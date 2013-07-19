@@ -2,6 +2,9 @@
 
 =head1 NAME
 
+Before all that, it should be pointed out emphatically that this
+software is pre-alpha and is probably best left alone...
+
 Wjournal - The Welterweight (i.e. not quite Lightweight) blogging
 system built on Perl5 and Dancer2.
 
