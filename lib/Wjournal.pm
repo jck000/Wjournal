@@ -97,7 +97,9 @@ get '/search/:terms/:page?' => sub {
 };
 
 post '/search' => sub {
-    redirect '/search/' . uri_encode(param('terms')) . '/';
+    return redirect '/' unless (param('terms'));
+    (my $terms = uri_decode(param('terms'))) =~ s#/# #g;
+    redirect '/search/' . uri_encode($terms) . '/';
 };
 
 # Other pages of #posts_per_page posts from all users.

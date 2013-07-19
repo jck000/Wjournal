@@ -15,7 +15,7 @@ sub get_rendered {
 
     my @rendered_posts;
 
-    if ($params{'search_terms'}) {
+    if ($params{'search_terms'} && $params{'search_terms'} !~ /^\s+$/) {
         my @search_terms = split /\s+/, $params{'search_terms'};
         map { $_ = "%${_}%" } @search_terms;
         $params{'text'} = [ -and => map{ like => $_ }, @search_terms ];
