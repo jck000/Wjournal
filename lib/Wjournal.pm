@@ -8,7 +8,7 @@ use Dancer2::Plugin::DBIC 'schema';
 use XML::RSS;
 use Try::Tiny;
 use HTML::Entities;
-use URI;
+use URI::Escape;
 
 our $VERSION = '0.01';
 
@@ -75,7 +75,7 @@ get '/search/:terms/:page?' => sub {
     my $posts  = $schema->resultset('Post')->get_rendered(
         date_format  => config->{'date_format'},
         rows         => config->{'posts_per_page'},
-        search_terms => uri_decode(param('terms')),
+        search_terms => uri_unescape(param('terms')),
         page         => param('page')
     );
     ($posts) || status 404;
@@ -98,8 +98,8 @@ get '/search/:terms/:page?' => sub {
 
 post '/search' => sub {
     return redirect '/' unless (param('terms'));
-    (my $terms = uri_decode(param('terms'))) =~ s#/# #g;
-    redirect '/search/' . URI->new($terms)->as_string . '/';
+    (my $terms = uri_unescape(param('terms'))) =~ s#/# #g;
+    redirect '/search/' . uri_escape($terms) . '/';
 };
 
 # Other pages of #posts_per_page posts from all users.
@@ -413,6 +413,7 @@ HTML::TreeBuilder
 Image::Imlib2
 Text::Markdown
 URI
+URI::Escape
 
 Recommended:
 
