@@ -8,7 +8,7 @@ use Dancer2::Plugin::DBIC 'schema';
 use XML::RSS;
 use Try::Tiny;
 use HTML::Entities;
-use URI::Encode qw/uri_encode uri_decode/;
+use URI;
 
 our $VERSION = '0.01';
 
@@ -99,7 +99,7 @@ get '/search/:terms/:page?' => sub {
 post '/search' => sub {
     return redirect '/' unless (param('terms'));
     (my $terms = uri_decode(param('terms'))) =~ s#/# #g;
-    redirect '/search/' . uri_encode($terms) . '/';
+    redirect '/search/' . URI->new($terms)->as_string . '/';
 };
 
 # Other pages of #posts_per_page posts from all users.
@@ -412,7 +412,7 @@ HTML::Entities
 HTML::TreeBuilder
 Image::Imlib2
 Text::Markdown
-URI::Escape
+URI
 
 Recommended:
 

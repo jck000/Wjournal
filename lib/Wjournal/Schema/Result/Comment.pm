@@ -6,7 +6,7 @@ use warnings;
 use base qw/DBIx::Class::Core/;
 
 use HTML::Entities;
-use URI::Escape;
+use URI;
 
 # Making changes? Don't forget to increment $VERSION in Wjournal::Schema
 
@@ -56,7 +56,7 @@ __PACKAGE__->belongs_to('post', 'Wjournal::Schema::Result::Post', 'post_id');
 sub render_website {
     my ($self) = @_;
     my $uri = URI->new($self->website)->as_string;
-    $uri =~ s/'/%27/; # Why doesn't URI encode apostrophes? Should we be using something more markup oriented?
+    $uri =~ s/'/%27/;
     return $uri;
 }
 
