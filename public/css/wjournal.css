@@ -30,6 +30,13 @@ img.icon {
     display: inline-block;
 }
 
+.caption {
+    background-color: #E8E8E8;
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
 a.title_link {
     text-decoration: none;
 }
