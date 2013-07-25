@@ -13,6 +13,8 @@ input[type=text].lesswidth {
     width:          85%;
 }
 
+pre {white-space: pre-wrap;}
+
 .success1 {
     background-color: #CCFF99;
     font-weight:      bold;
