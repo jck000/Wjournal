@@ -48,6 +48,19 @@ sub render_posts{
     }
 }
 
+# This sort of thing should probably be a schema hook, more optimal approach being considered.
+sub post_permitted {
+    my ($uid, $post_id) = @_;
+    my $schema = schema('default');
+    my $poster = $schema->resultset('Poster')->find($uid);
+    ($poster) || return undef;
+    ($poster->admin) && return 1;
+    my $post = $schema->resultset('Post')->find($post_id);
+    ($post) || return undef;
+    ($uid eq $post->uid) && return 1;
+    return 0;
+}
+
 # Front page, last #posts_per_page posts from all users.
 
 get '/' => sub {

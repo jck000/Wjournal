@@ -20,7 +20,7 @@ my %actions = (
     withdraw => \&withdraw_post,
     publish  => \&publish_post,
     delete   => \&delete_post,
-    output   => \&output_post,
+    OUTput   => \&output_post,
     new      => \&new_post,
 );
 
@@ -148,6 +148,22 @@ sub ask {
     return 1 if (($answer =~ /^y/i) || ($default =~ /^y/i && (!$answer)));
 
     0;
+}
+
+sub update_post {
+    my ($file) = @_;
+    my $allowed = Wjournal::post_permitted($user, $opts{'update'}) //
+                  die("Trouble locating user $user or post " . $opts{'update'} . "\n");
+    die "Permission denied\n" if (!$allowed);
+
+    my $post = $schema->resultset('Post')->find($opts{'update'})->update(
+        {
+            subject => get_subject($file),
+            text => scalar read_file($file),
+            # published_date => time, Hmm, do I want this?
+        }
+    )
+
 }
 
 sub new_post {
