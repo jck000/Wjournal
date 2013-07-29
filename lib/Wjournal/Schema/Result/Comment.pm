@@ -6,6 +6,8 @@ use warnings;
 use base qw/DBIx::Class::Core/;
 
 use HTML::Entities;
+use URI::Escape qw/uri_escape/;
+use Digest::MD5 qw/md5_hex/;
 use URI;
 
 # Making changes? Don't forget to increment $VERSION in Wjournal::Schema
@@ -77,6 +79,13 @@ sub render_two_cents {
     Wjournal::linkify(\$two_cents);
     return $two_cents;
 }
+
+sub gravatar {
+    my ($self) = @_;
+    return undef if (!Wjournal::config->{'gravatars'});
+    return "http://www.gravatar.com/avatar/".md5_hex(lc $self->email)."?d=identicon&s=40";
+}
+
 
 # RFC 2822 validation is non-trivial, let's just check for at least one
 # '@' and no newlines.

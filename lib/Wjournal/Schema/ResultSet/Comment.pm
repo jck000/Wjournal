@@ -20,6 +20,7 @@ sub get_rendered {
            website => $comment->render_website,
            two_cents => $comment->render_two_cents,
            stamp => strftime($date_format, localtime($comment->date)),
+           gravatar => $comment->gravatar,
         }
     }
 

@@ -38,6 +38,11 @@ img.icon {
     display: inline-block;
 }
 
+img.gravatar {
+    float: left;
+    padding-right: 3px;
+}
+
 .caption {
     background-color: #E8E8E8;
     text-align: center;
