@@ -77,7 +77,7 @@ sub render_text {
     for ($self->format) {
         when ('txt') {
             my $txt = '<p>' . encode_entities($self->text, '<>&\'"') . '</p>';
-            $txt =~ s#\n\s*\n#</p><p>#;
+            $txt =~ s#\n\s*\n#</p><p>#g;
             Wjournal::linkify(\$txt);
             return $txt;
         }
