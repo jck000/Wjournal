@@ -36,6 +36,15 @@
                 </div>
             </div>
 
+            <div class="row remove-bottom mysterybox">
+                <div class="three columns alpha">
+                    Mystery box, leave it alone!
+                </div>
+                <div class="seven columns omega">
+                    <input type="text" name="mysterybox" class="fullwidth" />
+                </div>
+            </div>
+
             <div class="row remove-bottom">
                 <textarea name="two_cents" rows="8" class="fullwidth">[% two_cents %]</textarea>
             </div>

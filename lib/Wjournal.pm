@@ -100,7 +100,6 @@ get '/search/:terms/:page?' => sub {
         "/search/" . param('terms') . '/' .  (param('page') - 1) :
         undef);
 
-
     render_posts(
         posts       => $posts || undef,
         older       => $old_link,
@@ -244,7 +243,7 @@ post '/post/:post_id/:post_key?' => sub {
         $schema->resultset('Comment')->create({
             post_id => $post_id,
             name => "" . param('name'),
-            approved => (param('level1')) ? 0 : 1,
+            approved => (param('level1') || param('mysterybox')) ? 0 : 1,
             date => time,
             email => "" . param('email'),
             website => "" . param('website'),

@@ -50,6 +50,11 @@ img.gravatar {
     margin-bottom: 10px;
 }
 
+
+div.mysterybox {
+    display:none;
+}
+
 a.title_link {
     text-decoration: none;
 }
