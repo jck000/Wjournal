@@ -1,0 +1,146 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use v5.10.1;
+use autodie;
+
+use Dancer2 ':script';
+use Wjournal;
+use Carp;
+use Getopt::Long qw/:config no_ignore_case bundling/;
+use POSIX 'strftime';
+
+my %actions = (
+    review   => \&review_comments,
+    revoke   => \&revoke_comments,
+    remove   => \&remove_comment,
+    approve  => \&approve_comment,
+    purge    => \&purge_comments,
+);
+
+my $schema = Wjournal::schema('default');
+my %opts;
+
+my ($login, $pwd, $uid) = getpwuid($<);
+my $user = get_user($uid, $login);
+
+sub get_options {
+    $opts{'env'} = 'production';
+    $opts{'filetype'} = '';
+
+    GetOptions(
+        "r|review"      => \$opts{'review'},
+        "R|revoke"      => \$opts{'revoke'},
+        "d|remove=i"    => \$opts{'remove'},
+        "a|approve=i"   => \$opts{'approve'},
+        "p|purge"       => \$opts{'purge'},
+    );
+
+    if ($opts{'help'}) {
+        pod2usage( { -verbose => 1} );
+        exit(0);
+    }
+
+    $opts{'action'} = $actions{'new'};
+    ( $opts{'review'} )   && ($opts{'action'} = $actions{'review'});
+    ( $opts{'revoke'} )   && ($opts{'action'} = $actions{'revoke'});
+    ( $opts{'remove'} )   && ($opts{'action'} = $actions{'remove'});
+    ( $opts{'approve'} )  && ($opts{'action'} = $actions{'approve'});
+    ( $opts{'purge'} )    && ($opts{'action'} = $actions{'purge'});
+
+    for ($opts{'env'}) {
+        when (/^d/i) {
+            $opts{'env'} = 'development';
+        }
+        when (/^t/i) {
+            $opts{'env'} = 'testing';
+        }
+        when (/^s/i) {
+            $opts{'env'} = 'staging';
+        }
+        default {
+            $opts{'env'} = 'production';
+        }
+    }
+}
+
+sub get_user {
+    my ($uid, $login) = @_;
+
+    $schema->resultset('Poster')->find_or_create(
+        {
+            uid   => $uid,
+            login => $login,
+            name  => $login,
+            admin => 0,
+        },
+    ) or croak "Unable to find_or_create new user $login with uid $uid";
+
+    return $uid;
+}
+
+sub ask {
+    my ($question, $default) = @_;
+    $default ||= 'n';
+
+    print "${question} " .
+    (($default =~ /^y/i)? '[Y/n]' : '[y/N]' ) .
+    " ? ";
+
+    if ($opts{'yes'}) {
+        print "y\n";
+        return 1;
+    }
+    elsif ($opts{'no'}) {
+        print "n\n";
+        return 0;
+    }
+
+    chomp(my $answer = <STDIN>);
+    return 1 if (($answer =~ /^y/i) || ($default =~ /^y/i && (!$answer)));
+
+    0;
+}
+
+sub retrieve_comments {
+    my ($approved) = @_;
+    return $schema->resultset('Comment')->search(
+        {   approved => $approved,
+            'post.uid' => $user,
+        },
+        {   join => 'post',
+            order_by => { -desc => 'date' },
+        }
+    );
+}
+
+sub review_comments {
+    die unless my $comments = retrieve_comments(0);
+    while (my $comment = $comments->next) {
+        print "Post : " . $comment->post->id . " - " . $comment->post->subject . "\n";
+        print "By : " . $comment->name . " (" . $comment->email . ") on ";
+        print strftime("%a, %d %b %Y %H:%M", localtime($comment->date)) . "\n";
+        print $comment->two_cents . "\n\n";
+        $comment->update( { approved => 1 } )
+            if ask("Approve this comment");
+    }
+}
+
+sub revoke_comments {
+    die unless my $comments = retrieve_comments(1);
+    while (my $comment = $comments->next) {
+        print "Post : " . $comment->post->id . " - " . $comment->post->subject . "\n";
+        print "By : " . $comment->name . " (" . $comment->email . ") on ";
+        print strftime("%a, %d %b %Y %H:%M", localtime($comment->date)) . "\n";
+        print $comment->two_cents . "\n\n";
+        $comment->update( { approved => 0 } )
+            if ask("Un-approve this comment");
+    }
+}
+
+get_options;
+set environment => $opts{'env'};
+$opts{'action'}(@ARGV);
+
