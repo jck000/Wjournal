@@ -5,7 +5,7 @@ use warnings;
 
 #use Plack::Builder;
 #use Dancer2::Request;
-use Dancer2 ':syntax';
+use Dancer2;
 use Wjournal;
 
 #my $app = sub {

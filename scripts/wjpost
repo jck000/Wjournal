@@ -19,8 +19,7 @@ my %actions = (
     delete   => \&delete_post,
     withdraw => \&withdraw_post,
     publish  => \&publish_post,
-    delete   => \&delete_post,
-    OUTput   => \&output_post,
+    output   => \&output_post,
     new      => \&new_post,
 );
 
@@ -154,16 +153,21 @@ sub update_post {
     my ($file) = @_;
     my $allowed = Wjournal::post_permitted($user, $opts{'update'}) //
                   die("Trouble locating user $user or post " . $opts{'update'} . "\n");
-    die "Permission denied\n" if (!$allowed);
+    croak "Permission denied\n" if (!$allowed);
 
-    my $post = $schema->resultset('Post')->find($opts{'update'})->update(
+    my $post = $schema->resultset('Post')->find($opts{'update'});
+
+    $post->update(
         {
             subject => get_subject($file),
             text => scalar read_file($file),
             # published_date => time, Hmm, do I want this?
         }
-    )
-
+    ) if ask("Replace post " . config->{'www_root'} . 'post/' .
+            $post->id . '/' .
+            (($post->is_pending) ? $post->preview_token : "" ) .
+            " (" . $post->subject . ")" .
+            " with " . $file );
 }
 
 sub new_post {
