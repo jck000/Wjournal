@@ -2,11 +2,11 @@
 
         [% FOREACH post IN posts %]
 
-            <a href="/post/[% post.id %]/" class="title_link">
-                <h4>
+            <h4>
+                <a href="/post/[% post.id %]/" class="title_link">
                     [% post.subject %]
-                </h4>
-            </a>
+                </a>
+            </h4>
 
             <p>
                 [% post.text %]

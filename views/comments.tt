@@ -14,11 +14,13 @@
                 [% END %][% comment.name %][% IF comment.website %]</a>
                 [% END %]
 
-                on <a href='#[% comment.id %]'>[% comment.stamp %]</a>
-
                 <br />
 
-                [% comment.two_cents %]
+                <a href='#[% comment.id %]'><span class="comment_stamp">[% comment.stamp %]</span></a>
+
+                <div class="two_cents">
+                    [% comment.two_cents %]
+                </div>
 
         </p><hr />
 
