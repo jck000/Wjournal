@@ -3,9 +3,9 @@
         [% FOREACH post IN posts %]
 
             <h4>
-                <a href="/post/[% post.id %]/" class="title_link">
+                [% UNLESS nolink %]<a href="/post/[% post.id %]/" class="title_link">[% END %]
                     [% post.subject %]
-                </a>
+                [% UNLESS nolink %]</a>[% END %]
             </h4>
 
             <p>

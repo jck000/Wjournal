@@ -39,7 +39,7 @@ sub linkify {
     $$text =~ s/(https?:\/\/[^\s]*)/<a href="$1">$1<\/a>/gi;
 }
 
-sub render_posts{
+sub render_posts {
     template 'index' => {
         title  => config->{'appname'},
         app    => config->{'appname'},
@@ -143,6 +143,10 @@ get '/page/:page' => sub {
 
 # Single post with preview key + rendered comments
 
+get '/post/:post_id' => sub {
+    forward "/post/" . param('post_id') . "/";
+};
+
 get '/post/:post_id/:post_key?' => sub {
     my $schema = schema('default');
     my $posts  = $schema->resultset('Post')->get_rendered(
@@ -174,6 +178,7 @@ get '/post/:post_id/:post_key?' => sub {
             },
             { layout => undef }
         ),
+        nolink => 1,
     );
 };
 
